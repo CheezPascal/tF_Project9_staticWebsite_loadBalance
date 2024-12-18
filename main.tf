@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "us-east-1" # Change to your desired AWS region
+  region = "us-east-1"
 }
 
 # ------------------------------
@@ -13,6 +13,22 @@ resource "aws_security_group" "web_sg" {
     description = "HTTP Access"
     from_port   = 80
     to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "SSH"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "HTTPS Access"
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -37,18 +53,18 @@ resource "aws_security_group" "web_sg" {
 # Ubuntu Instances
 # ------------------------------
 resource "aws_instance" "ubuntu_main" {
-  ami                    = "ami-0c55b159cbfafe1f0" # Ubuntu 20.04 Free Tier AMI (us-east-1)
+  ami                    = "ami-0e2c8caa4b6378d8c"
   instance_type          = "t2.micro"
-  key_name               = "your-key-pair" # Replace with your key pair name
+  key_name               = "mk"
   vpc_security_group_ids = [aws_security_group.web_sg.id]
 
   user_data = <<-EOF
               #!/bin/bash
-              apt update -y
-              apt install -y httpd
-              echo "<h1>Main Page</h1>" > /var/www/html/index.html
-              systemctl start apache2
-              systemctl enable apache2
+              sudo apt update -y
+              sudo apt install -y httpd
+              sudo echo "<h1>Main Page</h1>" > /var/www/html/index.html
+              sudo systemctl start apache2
+              sudo systemctl enable apache2
               EOF
 
   tags = {
@@ -57,18 +73,18 @@ resource "aws_instance" "ubuntu_main" {
 }
 
 resource "aws_instance" "ubuntu_outage" {
-  ami                    = "ami-0c55b159cbfafe1f0" # Ubuntu 20.04 Free Tier AMI (us-east-1)
+  ami                    = "ami-0e2c8caa4b6378d8c"
   instance_type          = "t2.micro"
-  key_name               = "your-key-pair" # Replace with your key pair name
+  key_name               = "mk"
   vpc_security_group_ids = [aws_security_group.web_sg.id]
 
   user_data = <<-EOF
               #!/bin/bash
-              apt update -y
-              apt install -y httpd
-              echo "<h1>Website Outage</h1>" > /var/www/html/index.html
-              systemctl start apache2
-              systemctl enable apache2
+              sudo apt update -y
+              sudo apt install -y httpd
+              sudo echo "<h1>Website Outage</h1>" > /var/www/html/index.html
+              sudo systemctl start apache2
+              sudo systemctl enable apache2
               EOF
 
   tags = {
@@ -79,27 +95,27 @@ resource "aws_instance" "ubuntu_outage" {
 # ------------------------------
 # Windows Instances (Not Load Balanced)
 # ------------------------------
-resource "aws_instance" "windows1" {
-  ami                    = "ami-04e5276ebb8451442" # Windows Server 2019 Base AMI (us-east-1)
-  instance_type          = "t2.micro"
-  key_name               = "your-key-pair" # Replace with your key pair name
-  vpc_security_group_ids = [aws_security_group.web_sg.id]
+# resource "aws_instance" "windows1" {
+#  ami                    = "ami-09ec59ede75ed2db7"
+#  instance_type          = "t3.micro"
+#  key_name               = "mk"
+#  vpc_security_group_ids = [aws_security_group.web_sg.id]
 
-  tags = {
-    Name = "Windows1"
-  }
-}
+#  tags = {
+#    Name = "Windows1"
+#  }
+# }
 
-resource "aws_instance" "windows2" {
-  ami                    = "ami-04e5276ebb8451442" # Windows Server 2019 Base AMI (us-east-1)
-  instance_type          = "t2.micro"
-  key_name               = "your-key-pair" # Replace with your key pair name
-  vpc_security_group_ids = [aws_security_group.web_sg.id]
+# resource "aws_instance" "windows2" {
+#  ami                    = "ami-09ec59ede75ed2db7"
+#  instance_type          = "t3.micro"
+#  key_name               = "mk"
+#  vpc_security_group_ids = [aws_security_group.web_sg.id]
 
-  tags = {
-    Name = "Windows2"
-  }
-}
+#  tags = {
+#    Name = "Windows2"
+#  }
+# }
 
 # ------------------------------
 # Load Balancer
